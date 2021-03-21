@@ -1,5 +1,6 @@
 import org.bouncycastle.crypto.engines.DESEngine
 import org.bouncycastle.crypto.macs.ISO9797Alg3Mac
+import org.bouncycastle.crypto.paddings.ISO7816d4Padding
 import org.bouncycastle.crypto.params.KeyParameter
 import java.security.MessageDigest
 import javax.crypto.Cipher
@@ -151,6 +152,22 @@ fun main() {
             0xDC.toByte(), 0x17.toByte(), 0x15.toByte(), 0xCC.toByte()
         )
     )
+    println("-----------------------------------------------------------------------------")
+
+    val authSendMessage = tdes2keyEncode(
+        keySessionEnc,
+        cardNumber.toByteArray() + byteArrayOf(0x80.toByte(), 0x00, 0x00, 0x00)
+    )
+    printByteArray("authSendMessage", authSendMessage)
+    printByteArray(
+        "expectAuthSendM",
+        byteArrayOf(
+            0x1A.toByte(), 0xA8.toByte(), 0x29.toByte(), 0x73.toByte(),
+            0xDB.toByte(), 0x95.toByte(), 0x9A.toByte(), 0x81.toByte(),
+            0x1F.toByte(), 0x97.toByte(), 0x11.toByte(), 0xD7.toByte(),
+            0x28.toByte(), 0xF0.toByte(), 0xEE.toByte(), 0xF6.toByte()
+        )
+    )
 
 }
 
@@ -192,7 +209,7 @@ fun retailMac(
 ): ByteArray {
     val mac = ISO9797Alg3Mac(
         DESEngine(),
-        org.bouncycastle.crypto.paddings.ISO7816d4Padding()
+        ISO7816d4Padding()
     ).apply {
         init(
             KeyParameter(key)
